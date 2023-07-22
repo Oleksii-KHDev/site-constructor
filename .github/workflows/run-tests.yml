@@ -1,0 +1,45 @@
+name: run-tests
+on:
+  push:
+    branches:
+      - master
+      - dev
+
+  pull_request:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'src/**'
+
+jobs:
+  test-be:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
+    outputs:
+      test_status: ${{ steps.check-changes.outputs.test_status }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Check changes
+        id: check-changes
+        run: |
+          if git diff --quiet HEAD^ HEAD --relative; then
+            echo "::set-output name=test_status::skipped"
+            echo "No changes in code, skipping tests"
+            exit 0
+          else
+            echo "Code changes detected, proceeding"
+            echo "::set-output name=test_status::run"
+          fi
+      - uses: actions/setup-node@v3
+        if: steps.check-changes.outputs.test_status == 'run'
+        with:
+          node-version: '18.x'
+      - run: npm install && npm i -g jest
+        if: steps.check-changes.outputs.test_status == 'run'
+      - run: yarn test --verbose --bail
+        if: steps.check-changes.outputs.test_status == 'run'
