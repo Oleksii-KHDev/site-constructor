@@ -1,9 +1,9 @@
-// import type {IHostingAccountCreator} from 'site-constructor/hosting/new-account-creator';
-
-// export class NewAccountCreator implements IHostingAccountCreator {
-//   constructor(protected readonly options: object = {}) {}
-// }
+import { RegistrationOptions } from 'site-constructor/hosting/new-account-creator';
 
 export class NewAccountCreator {
-  constructor(protected readonly options: object = {}) {}
+  protected registrationOptions: RegistrationOptions;
+
+  constructor(registrationOptions: RegistrationOptions = {}) {
+    this.registrationOptions = registrationOptions;
+  }
 }
