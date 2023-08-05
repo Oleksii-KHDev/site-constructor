@@ -1,5 +1,4 @@
 declare module 'site-constructor' {
-  // export interface MySiteConstructorType {
-  // Some type definition here
-  // }
+  export type email = string;
+  export type login = string;
 }
