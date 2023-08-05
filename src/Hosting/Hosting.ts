@@ -1,19 +1,9 @@
-  // import {IHosting} from 'site-constructor/hosting';
-  import { NewAccountCreator } from './NewAccountCreator';
+import {INewHostingOptions} from "site-constructor/hosting"
 
-  /**
-   * Main class for hosting functionality
-   */
-  // export class Hosting implements IHosting{
-  //   constructor(protected readonly options: object = {}) {}
-  //   public createNewAccount() {
-  //     const newAccountCreator = new NewAccountCreator();
-  //   }
-  // }
+export class Hosting {
+  protected options: INewHostingOptions;
 
-  export class Hosting {
-    constructor(protected readonly options: object = {}) {}
-    public createNewAccount() {
-      const newAccountCreator = new NewAccountCreator();
-    }
+  constructor(options: INewHostingOptions = {}) {
+    this.options = options;
   }
+}
