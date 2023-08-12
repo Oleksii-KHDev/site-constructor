@@ -1,8 +1,8 @@
-import { NewAccountCreator } from './NewAccountCreator';
+import { NewAccountCreator } from 'site-constructor/hosting/new-account-creator';
 import type { RegistrationOptions, IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
 import type { IHostingAccount } from 'site-constructor/hosting';
 
-export class UkraineHostingNewAccountCreator extends NewAccountCreator implements IHostingAccountCreator {
+export class UkraineHostingNewAccountCreator extends NewAccountCreator {
   constructor(registrationOptions: RegistrationOptions = {}) {
     super(registrationOptions);
   }
