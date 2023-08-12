@@ -1,7 +1,7 @@
-import { Hosting } from './hosting';
-import type { IHosting, INewHostingOptions } from 'site-constructor/hosting';
+import type { INewHostingOptions } from 'site-constructor/hosting';
+import { Hosting } from 'site-constructor/hosting';
 
-export class UkraineHosting extends Hosting implements IHosting {
+export class UkraineHosting extends Hosting {
   constructor(options: INewHostingOptions = {}) {
     super(options);
   }

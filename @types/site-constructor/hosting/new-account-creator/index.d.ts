@@ -9,4 +9,14 @@ declare module 'site-constructor/hosting/new-account-creator' {
   export interface RegistrationOptions {
     email?: email;
   }
+
+  export abstract class NewAccountCreator implements IHostingAccountCreator {
+    protected registrationOptions: RegistrationOptions;
+
+    protected constructor(registrationOptions: RegistrationOptions = {}) {
+      this.registrationOptions = registrationOptions;
+    }
+
+    abstract register(): IHostingAccount;
+  }
 }
