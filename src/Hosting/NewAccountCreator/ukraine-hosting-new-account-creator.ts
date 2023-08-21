@@ -1,16 +1,33 @@
-import { NewAccountCreator } from 'site-constructor/hosting/new-account-creator';
-import type { RegistrationOptions, IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
+import { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
+import type { IRegistrationOptions } from 'site-constructor/hosting/new-account-creator';
 import type { IHostingAccount } from 'site-constructor/hosting';
+import { injectable } from 'inversify';
 
-export class UkraineHostingNewAccountCreator extends NewAccountCreator {
-  constructor(registrationOptions: RegistrationOptions = {}) {
-    super(registrationOptions);
+@injectable()
+export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
+  _registrationOptions?: IRegistrationOptions | undefined;
+
+  getRegistrationOptions(): IRegistrationOptions | undefined {
+    return this._registrationOptions;
   }
 
-  public register(): IHostingAccount {
+  setRegistrationOptions(value: IRegistrationOptions) {
+    this._registrationOptions = value;
+  }
+
+  constructor(registrationOptions: IRegistrationOptions = {}) {
+    this._registrationOptions = registrationOptions;
+  }
+
+  public register(registrationOptions?: IRegistrationOptions): IHostingAccount {
+    if (registrationOptions) {
+      this.setRegistrationOptions(registrationOptions);
+    }
+
     return {
-      login: this.registrationOptions.email ?? '',
-      email: this.registrationOptions.email ?? '',
+      login: this.getRegistrationOptions()?.email ?? '',
+      email: this.getRegistrationOptions()?.email ?? '',
+      creatorClassName: this.constructor.name,
     };
   }
 }
