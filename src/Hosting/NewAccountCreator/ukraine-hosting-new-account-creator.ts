@@ -27,6 +27,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
     return {
       login: this.getRegistrationOptions()?.email ?? '',
       email: this.getRegistrationOptions()?.email ?? '',
+      hostingUrl: this.getRegistrationOptions()?.hostingUrl ?? '',
       creatorClassName: this.constructor.name,
     };
   }
