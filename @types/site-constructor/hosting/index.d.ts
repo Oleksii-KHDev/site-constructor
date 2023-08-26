@@ -1,4 +1,4 @@
-import type { email, login } from 'site-constructor';
+import type { email, login, hostingUrl } from 'site-constructor';
 import type { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
 
 declare module 'site-constructor/hosting' {
@@ -20,11 +20,13 @@ declare module 'site-constructor/hosting' {
 
   export interface IHostingOptions {
     email?: email;
+    hostingUrl?: hostingUrl;
   }
 
   export interface IHostingAccount {
     login: login;
     email: email;
+    hostingUrl: hostingUrl;
     creatorClassName?: string;
   }
 }

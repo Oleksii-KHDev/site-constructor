@@ -26,6 +26,9 @@ export class UkraineHosting implements IHosting {
   }
 
   public createNewAccount() {
-    return this.accountCreator!.register({ email: this.getOptions()?.email });
+    return this.accountCreator!.register({
+      email: this.getOptions()?.email,
+      hostingUrl: this.getOptions()?.hostingUrl,
+    });
   }
 }
