@@ -7,7 +7,7 @@ declare module 'site-constructor/hosting/new-account-creator' {
     getRegistrationOptions: () => IRegistrationOptions | undefined;
 
     setRegistrationOptions: (value: RegistrationOptions) => void;
-    register: (options?: IRegistrationOptions) => IHostingAccount;
+    register: (options?: IRegistrationOptions) => Promise<IHostingAccount>;
   }
 
   export interface IRegistrationOptions {

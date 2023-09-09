@@ -46,6 +46,8 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "inversify": "^6.0.1",
-    "reflect-metadata": "^0.1.13"
+    "puppeteer": "^21.1.0",
+    "reflect-metadata": "^0.1.13",
+    "tesseract.js": "^4.1.2"
   }
 }
