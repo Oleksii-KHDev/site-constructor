@@ -5,16 +5,22 @@ import TAG from '../constants/tags';
 import type { IHostingOptions, IHostingFactory, IHosting } from 'site-constructor/hosting';
 import { UkraineHosting } from '../Hosting';
 import type { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
+import type { ICaptchaRecogniser } from 'site-constructor';
 import { UkraineHostingFactory } from '../Hosting/HostingFactory/ukraine-hosting-factory';
 import { UkraineHostingNewAccountCreator } from '../Hosting/NewAccountCreator';
+import { CaptchaRecogniser } from '../utils';
 
 const container = new Container();
 
 container.bind<IHostingFactory>(SERVICE_IDENTIFIER.UKRAINE_HOSTING_FACTORY).to(UkraineHostingFactory);
+
 container
   .bind<IHostingAccountCreator>(SERVICE_IDENTIFIER.NEW_ACCOUNT_CREATOR)
   .to(UkraineHostingNewAccountCreator)
   .whenParentNamed(TAG.UKRAINE_HOSTING);
+
+container.bind<ICaptchaRecogniser>(SERVICE_IDENTIFIER.CAPTCHA_RECOGNISER).to(CaptchaRecogniser);
+
 container
   .bind<interfaces.Factory<IHosting>>(SERVICE_IDENTIFIER.HOSTING_FACTORY)
   .toFactory<IHosting, [string], [IHostingOptions]>((context: interfaces.Context) => {
