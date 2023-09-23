@@ -8,4 +8,6 @@ declare module 'site-constructor' {
     initializeEnvironment: (options?: any) => Promise<void>;
     destroyEnvironment: () => Promise<void>;
   }
+
+  export type HttpErrorDetails = [number, string, { code: number }];
 }
