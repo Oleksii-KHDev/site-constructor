@@ -47,7 +47,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
      * @TODO add validation of Registration options
      */
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
     if (
