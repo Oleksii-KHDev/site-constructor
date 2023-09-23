@@ -5,11 +5,15 @@ import type { IHostingAccount, IHostingFactory } from 'site-constructor/hosting'
 import { UkraineHostingNewAccountCreator } from '../NewAccountCreator';
 
 describe('Test creation of new Hosting instance', () => {
-  test('Should get Ukraine hosting instance from Inversify container', () => {
+  test('Should get Ukraine hosting instance from Inversify container', async () => {
     const email: email = 'yapew35657@anomgo.com';
+    const hostingUrl = 'https://www.ukraine.com.ua/';
     const ukraineHostingFactory: IHostingFactory = container.get(SERVICE_IDENTIFIER.UKRAINE_HOSTING_FACTORY);
-    const hosting = ukraineHostingFactory.createHosting({ email });
-    const account: IHostingAccount = hosting.createNewAccount();
+    const hosting = ukraineHostingFactory.createHosting({ email, hostingUrl });
+    jest
+      .spyOn(UkraineHostingNewAccountCreator.prototype, 'register')
+      .mockResolvedValue({ login: email, email, hostingUrl, creatorClassName: UkraineHostingNewAccountCreator.name });
+    const account: IHostingAccount = await hosting.createNewAccount();
     expect(account).toBeDefined();
     expect(account).not.toBeNull();
     expect(account.email).toEqual(email);

@@ -1,7 +1,6 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  maxWorkers: 4,
   setupFilesAfterEnv: ['jest-extended/all'],
   modulePathIgnorePatterns: ['<rootDir>/.build/'],
   transform: {
