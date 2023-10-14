@@ -1,6 +1,5 @@
 import type { IHostingOptions, IHosting } from 'site-constructor/hosting';
 import type { IValidationResult } from 'site-constructor/validation';
-import { ValidationStatus } from 'site-constructor/validation';
 import type { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
 import { injectable, inject, postConstruct } from 'inversify';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
@@ -29,7 +28,7 @@ export class UkraineHosting implements IHosting {
   async setOptions(value: IHostingOptions) {
     const validationResult: IValidationResult = await new DtoValidator(HostingOptionsDto).validate(value);
 
-    if (validationResult.status === ValidationStatus.ok) {
+    if (validationResult.status === 'ok') {
       this._options = value;
       return;
     }

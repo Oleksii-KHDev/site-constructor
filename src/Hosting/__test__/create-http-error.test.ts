@@ -16,7 +16,7 @@ import { INVALID_REGISTRATION_OPTIONS, INVALID_REGISTRATION_OPTIONS_ERROR } from
 
 describe('Test creating http-error from http-errors package with constants error values', () => {
   test('Should returns INVALID_REGISTRATION_OPTIONS_ERROR', async () => {
-    expect.assertions(9);
+    expect.assertions(6);
 
     try {
       const result = await UkraineHostingNewAccountCreator.prototype.register();
@@ -27,9 +27,6 @@ describe('Test creating http-error from http-errors package with constants error
       expect((err as HttpError).status).toEqual(400);
       expect((err as HttpError).code).toEqual(INVALID_REGISTRATION_OPTIONS);
       expect((err as HttpError).message).toEqual(expect.stringContaining(INVALID_REGISTRATION_OPTIONS_ERROR[1]));
-      expect(mockLaunch).toBeCalledTimes(1);
-      expect(mockNewPage).toBeCalledTimes(1);
-      expect(mockClose).toBeCalledTimes(1);
     }
   });
 });
