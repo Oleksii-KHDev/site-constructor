@@ -11,7 +11,7 @@ import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
 import * as errors from '../../constants/errors';
 import { CAPTCHA_IMAGE_FILE_NAME } from '../../constants';
 import createHttpError from 'http-errors';
-import { IValidationResult, ValidationStatus } from 'site-constructor/validation';
+import { IValidationResult } from 'site-constructor/validation';
 import { HostingAccountOptionsDto } from './Dto/new-account-options.dto';
 
 @injectable()
@@ -52,7 +52,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       registrationOptions,
     );
 
-    if (validationResult.status === ValidationStatus.error) {
+    if (validationResult.status === 'error') {
       throw createHttpError(...errors.INVALID_REGISTRATION_OPTIONS_ERROR);
     }
 
