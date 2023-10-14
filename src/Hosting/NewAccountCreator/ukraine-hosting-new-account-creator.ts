@@ -5,12 +5,14 @@ import type { IHostingAccount } from 'site-constructor/hosting';
 import type { ICaptchaRecogniser } from 'site-constructor';
 import { inject, injectable } from 'inversify';
 import puppeteer from 'puppeteer';
-import { convertImageSourceToUint8Array, delay, saveUint8ArrayImageToDisk } from '../../utils';
+import { convertImageSourceToUint8Array, delay, DtoValidator, saveUint8ArrayImageToDisk } from '../../utils';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
 import * as errors from '../../constants/errors';
 import { CAPTCHA_IMAGE_FILE_NAME } from '../../constants';
 import createHttpError from 'http-errors';
+import { IValidationResult, ValidationStatus } from 'site-constructor/validation';
+import { HostingAccountOptionsDto } from './Dto/new-account-options.dto';
 
 @injectable()
 export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
@@ -42,25 +44,22 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
   }
 
   public async register(registrationOptions?: IRegistrationOptions): Promise<IHostingAccount> {
-    if (registrationOptions) {
-      this.setRegistrationOptions(registrationOptions);
+    if (!registrationOptions) {
+      throw createHttpError(...errors.INVALID_REGISTRATION_OPTIONS_ERROR);
     }
 
-    /**
-     * @TODO add validation of Registration options
-     */
+    const validationResult: IValidationResult = await new DtoValidator(HostingAccountOptionsDto).validate(
+      registrationOptions,
+    );
+
+    if (validationResult.status === ValidationStatus.error) {
+      throw createHttpError(...errors.INVALID_REGISTRATION_OPTIONS_ERROR);
+    }
+
+    this.setRegistrationOptions(registrationOptions);
 
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-
-    if (
-      !this.getRegistrationOptions() ||
-      !this.getRegistrationOptions()?.hostingUrl ||
-      !this.getRegistrationOptions()?.email
-    ) {
-      await browser.close();
-      throw createHttpError(...errors.INVALID_REGISTRATION_OPTIONS_ERROR);
-    }
 
     await page.goto(this.getRegistrationOptions()!.hostingUrl!);
     await page.setViewport({ width: 1080, height: 1024 });
