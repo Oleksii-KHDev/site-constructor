@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import type { Worker } from 'tesseract.js';
 import type { ICaptchaRecogniser } from 'site-constructor';
 import { createWorker } from 'tesseract.js';

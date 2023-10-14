@@ -9,5 +9,5 @@ declare module 'site-constructor' {
     destroyEnvironment: () => Promise<void>;
   }
 
-  export type HttpErrorDetails = [number, string, { code: number }];
+  export type HttpErrorDetails = [number, string, { code: number; [key: string]: any }];
 }
