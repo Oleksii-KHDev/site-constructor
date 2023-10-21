@@ -5,8 +5,8 @@ import { injectable, inject, postConstruct } from 'inversify';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import { DtoValidator } from '../../utils';
 import { HostingOptionsDto } from '../Dto/hosting-options.dto';
-import createHttpError from 'http-errors';
 import * as errors from '../../constants/errors';
+import { HttpDetailedError } from '../../utils/errors/HttpDetailedError/http-detailed-error.class';
 
 @injectable()
 export class UkraineHosting implements IHosting {
@@ -33,7 +33,9 @@ export class UkraineHosting implements IHosting {
       return;
     }
 
-    throw createHttpError(...errors.INVALID_HOSTING_PARAMETERS_ERROR);
+    const validationError = new HttpDetailedError(errors.INVALID_HOSTING_PARAMETERS_ERROR);
+    validationError.setMeta('validationMessage', validationResult.message);
+    throw validationError;
   }
 
   get accountCreator(): IHostingAccountCreator | undefined {
