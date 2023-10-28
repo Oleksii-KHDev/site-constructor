@@ -15,20 +15,20 @@ export const ERROR_USING_CAPTCHA_RECOGNISER_SERVICE = 1006;
 export const CANT_SAVE_CAPTCHA_IMAGE_TO_DISK_ERROR: HttpErrorDetailsArray = [
   500,
   "Can't save captcha image to disk",
-  { code: CANT_SAVE_CAPTCHA_IMAGE_TO_DISK },
+  { errorCode: CANT_SAVE_CAPTCHA_IMAGE_TO_DISK },
 ];
 export const CAPTCHA_TEXT_NOT_RECOGNIZED_ERROR: HttpErrorDetailsArray = [
   500,
   'Captcha text was not recognized successfully',
-  { code: CAPTCHA_TEXT_NOT_RECOGNIZED },
+  { errorCode: CAPTCHA_TEXT_NOT_RECOGNIZED },
 ];
 export const CANT_FIND_CAPTCHA_TEXT_INPUT_FIELD_ERROR: HttpErrorDetailsArray = [
   500,
   "Can't find captcha text input field",
-  { code: CANT_FIND_CAPTCHA_TEXT_INPUT_FIELD },
+  { errorCode: CANT_FIND_CAPTCHA_TEXT_INPUT_FIELD },
 ];
 export const USING_CAPTCHA_RECOGNISER_SERVICE_ERROR: HttpErrorDetailsArray = [
   500,
   'Error occurred while using captcha recogniser service',
-  { code: ERROR_USING_CAPTCHA_RECOGNISER_SERVICE },
+  { errorCode: ERROR_USING_CAPTCHA_RECOGNISER_SERVICE },
 ];
