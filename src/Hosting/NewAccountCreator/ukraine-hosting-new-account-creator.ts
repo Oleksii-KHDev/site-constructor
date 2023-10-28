@@ -1,13 +1,18 @@
+import 'reflect-metadata';
 import { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
 import type { IRegistrationOptions } from 'site-constructor/hosting/new-account-creator';
 import type { IHostingAccount } from 'site-constructor/hosting';
 import type { ICaptchaRecogniser } from 'site-constructor';
 import { inject, injectable } from 'inversify';
 import puppeteer from 'puppeteer';
-import { convertImageSourceToUint8Array, delay, saveUint8ArrayImageToDisk } from '../../utils';
+import { convertImageSourceToUint8Array, delay, DtoValidator, saveUint8ArrayImageToDisk } from '../../utils';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
+import * as errors from '../../constants/errors';
 import { CAPTCHA_IMAGE_FILE_NAME } from '../../constants';
+import { IValidationResult } from 'site-constructor/validation';
+import { HostingAccountOptionsDto } from './Dto/new-account-options.dto';
+import { HttpDetailedError } from '../../utils/errors/HttpDetailedError/http-detailed-error.class';
 
 @injectable()
 export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
@@ -29,7 +34,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
 
   private async recogniseTextFromCaptchaImage(imagePath: string): Promise<string | undefined> {
     if (!this._captchaRecogniser) {
-      throw new Error('Error occurred while using captcha recogniser service');
+      throw new HttpDetailedError(errors.USING_CAPTCHA_RECOGNISER_SERVICE_ERROR);
     }
 
     await this._captchaRecogniser.initializeEnvironment();
@@ -39,24 +44,24 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
   }
 
   public async register(registrationOptions?: IRegistrationOptions): Promise<IHostingAccount> {
-    if (registrationOptions) {
-      this.setRegistrationOptions(registrationOptions);
+    if (!registrationOptions) {
+      throw new HttpDetailedError(errors.INVALID_REGISTRATION_OPTIONS_ERROR);
     }
 
-    /**
-     * @TODO add validation of Registration options
-     */
+    const validationResult: IValidationResult = await new DtoValidator(HostingAccountOptionsDto).validate(
+      registrationOptions,
+    );
+
+    if (validationResult.status === 'error') {
+      const validationError = new HttpDetailedError(errors.INVALID_REGISTRATION_OPTIONS_ERROR);
+      validationError.setMeta('validationMessage', validationResult.message);
+      throw validationError;
+    }
+
+    this.setRegistrationOptions(registrationOptions);
 
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-
-    if (
-      !this.getRegistrationOptions() ||
-      !this.getRegistrationOptions()?.hostingUrl ||
-      !this.getRegistrationOptions()?.email
-    ) {
-      throw new Error('There are no necessary registration options for creating new account');
-    }
 
     await page.goto(this.getRegistrationOptions()!.hostingUrl!);
     await page.setViewport({ width: 1080, height: 1024 });
@@ -68,7 +73,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
     const registerButton = await page.waitForSelector(UKRAINE_HOSTING_SETTINGS.REGISTRATION_BUTTON_SELECTOR);
 
     if (!registerButton) {
-      throw new Error("Can't find registration button on the page");
+      throw new HttpDetailedError(errors.CANT_FIND_REGISTRATION_BUTTON_ERROR);
     }
 
     await registerButton.evaluate((button) => button.click());
@@ -81,13 +86,13 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       const src = await (await captchaImgEl.getProperty('src')).jsonValue();
 
       if (!(await saveUint8ArrayImageToDisk(captchaFileName, convertImageSourceToUint8Array(src)))) {
-        throw new Error("Can't save captcha image to disk");
+        throw new HttpDetailedError(errors.CANT_SAVE_CAPTCHA_IMAGE_TO_DISK_ERROR);
       }
 
       const captchaText = await this.recogniseTextFromCaptchaImage(captchaFileName);
 
       if (!captchaText) {
-        throw new Error('Captcha text was not recognized successfully');
+        throw new HttpDetailedError(errors.CAPTCHA_TEXT_NOT_RECOGNIZED_ERROR);
       }
 
       const inputCaptchaField = await page.waitForSelector(
@@ -95,7 +100,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       );
 
       if (inputCaptchaField) {
-        throw new Error("Can't find captcha text input field");
+        throw new HttpDetailedError(errors.CANT_FIND_CAPTCHA_TEXT_INPUT_FIELD_ERROR);
       }
       await page.type(UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR, captchaText);
       await registerButton.evaluate((button) => button.click());

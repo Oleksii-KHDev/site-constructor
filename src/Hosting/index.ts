@@ -1,1 +1,1 @@
-export * from './ukraine-hosting';
+export * from './UkraineHosting/ukraine-hosting';
