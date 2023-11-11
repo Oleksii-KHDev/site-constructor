@@ -9,6 +9,8 @@ import type { ICaptchaRecogniser } from 'site-constructor';
 import { UkraineHostingFactory } from '../Hosting/HostingFactory/ukraine-hosting-factory';
 import { UkraineHostingNewAccountCreator } from '../Hosting/NewAccountCreator';
 import { CaptchaRecogniser } from '../utils';
+import UkraineHostingTwoFactorAuthentication from '../Hosting/TwoFactorAuthentication/UkraineHostingTwoFactorAuthentication/UkraineHostingTwoFactorAuthentication';
+import type { ITwoFactorAuthentication } from 'site-constructor/hosting/two-factor-authentication';
 
 const container = new Container();
 
@@ -17,6 +19,11 @@ container.bind<IHostingFactory>(SERVICE_IDENTIFIER.UKRAINE_HOSTING_FACTORY).to(U
 container
   .bind<IHostingAccountCreator>(SERVICE_IDENTIFIER.NEW_ACCOUNT_CREATOR)
   .to(UkraineHostingNewAccountCreator)
+  .whenParentNamed(TAG.UKRAINE_HOSTING);
+
+container
+  .bind<ITwoFactorAuthentication>(SERVICE_IDENTIFIER.TWO_FACTOR_AUTHENTICATION_SERVICE)
+  .to(UkraineHostingTwoFactorAuthentication)
   .whenParentNamed(TAG.UKRAINE_HOSTING);
 
 container.bind<ICaptchaRecogniser>(SERVICE_IDENTIFIER.CAPTCHA_RECOGNISER).to(CaptchaRecogniser);

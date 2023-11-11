@@ -7,12 +7,19 @@ import { DtoValidator } from '../../utils';
 import { HostingOptionsDto } from '../Dto/hosting-options.dto';
 import * as errors from '../../constants/errors';
 import { HttpDetailedError } from '../../utils/errors/HttpDetailedError/http-detailed-error.class';
+import type { ITwoFactorAuthentication } from 'site-constructor/hosting/two-factor-authentication';
 
 @injectable()
 export class UkraineHosting implements IHosting {
+  @inject(SERVICE_IDENTIFIER.TWO_FACTOR_AUTHENTICATION_SERVICE)
+  private readonly _twoFactorAutService: ITwoFactorAuthentication;
   @inject(SERVICE_IDENTIFIER.NEW_ACCOUNT_CREATOR)
   readonly _accountCreator?: IHostingAccountCreator;
   _options?: IHostingOptions | undefined;
+
+  constructor(options: IHostingOptions = {}) {
+    this._options = options;
+  }
 
   getOptions(): IHostingOptions | undefined {
     return this._options;
@@ -42,8 +49,8 @@ export class UkraineHosting implements IHosting {
     return this._accountCreator;
   }
 
-  constructor(options: IHostingOptions = {}) {
-    this._options = options;
+  get twoFactorAutService(): ITwoFactorAuthentication | undefined {
+    return this._twoFactorAutService;
   }
 
   public createNewAccount() {
@@ -51,5 +58,9 @@ export class UkraineHosting implements IHosting {
       email: this.getOptions()?.email,
       hostingUrl: this.getOptions()?.hostingUrl,
     });
+  }
+
+  public async enableTwoFactorAuthentication() {
+    console.log('UkraineHosting enableTwoFactorAuthentication');
   }
 }

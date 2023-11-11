@@ -44,6 +44,9 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
   }
 
   public async register(registrationOptions?: IRegistrationOptions): Promise<IHostingAccount> {
+    /**
+     * @TODO Polish and verify registration process
+     */
     if (!registrationOptions) {
       throw new HttpDetailedError(errors.INVALID_REGISTRATION_OPTIONS_ERROR);
     }
@@ -114,7 +117,6 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       login: this.getRegistrationOptions()?.email ?? '',
       email: this.getRegistrationOptions()?.email ?? '',
       hostingUrl: this.getRegistrationOptions()?.hostingUrl ?? '',
-      creatorClassName: this.constructor.name,
     };
   }
 }
