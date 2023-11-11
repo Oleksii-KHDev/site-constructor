@@ -11,7 +11,15 @@ declare module 'site-constructor/hosting' {
 
     readonly _accountCreator?: IHostingAccountCreator;
 
+    /**
+     * Create account
+     */
     createNewAccount: () => void;
+
+    /**
+     * Enable two-factor authentication
+     */
+    enableTwoFactorAuthentication: () => void;
   }
 
   export interface IHostingFactory {
@@ -27,6 +35,5 @@ declare module 'site-constructor/hosting' {
     login: login;
     email: email;
     hostingUrl: hostingUrl;
-    creatorClassName?: string;
   }
 }
