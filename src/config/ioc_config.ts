@@ -11,6 +11,7 @@ import { UkraineHostingNewAccountCreator } from '../Hosting/NewAccountCreator';
 import { CaptchaRecogniser } from '../utils';
 import UkraineHostingTwoFactorAuthentication from '../Hosting/TwoFactorAuthentication/UkraineHostingTwoFactorAuthentication/UkraineHostingTwoFactorAuthentication';
 import type { ITwoFactorAuthentication } from 'site-constructor/hosting/two-factor-authentication';
+import puppeteer, { Browser } from 'puppeteer';
 
 const container = new Container();
 
@@ -39,5 +40,8 @@ container
   });
 
 container.bind<IHosting>(SERVICE_IDENTIFIER.HOSTING).to(UkraineHosting).whenTargetNamed(TAG.UKRAINE_HOSTING);
+
+// PUPPETEER BROWSER
+container.bind<Promise<Browser>>(SERVICE_IDENTIFIER.BROWSER).toConstantValue(puppeteer.launch({ headless: true }));
 
 export default container;

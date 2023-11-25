@@ -4,7 +4,7 @@ import type { IRegistrationOptions } from 'site-constructor/hosting/new-account-
 import type { IHostingAccount } from 'site-constructor/hosting';
 import type { ICaptchaRecogniser } from 'site-constructor';
 import { inject, injectable } from 'inversify';
-import puppeteer from 'puppeteer';
+import puppeteer, { Browser } from 'puppeteer';
 import { convertImageSourceToUint8Array, delay, DtoValidator, saveUint8ArrayImageToDisk } from '../../utils';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
@@ -13,24 +13,12 @@ import { CAPTCHA_IMAGE_FILE_NAME } from '../../constants';
 import { IValidationResult } from 'site-constructor/validation';
 import { HostingAccountOptionsDto } from './Dto/new-account-options.dto';
 import { HttpDetailedError } from '../../utils/errors/HttpDetailedError/http-detailed-error.class';
+import container from '../../config/ioc_config';
 
 @injectable()
 export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
   @inject(SERVICE_IDENTIFIER.CAPTCHA_RECOGNISER)
   private readonly _captchaRecogniser?: ICaptchaRecogniser;
-  _registrationOptions?: IRegistrationOptions | undefined;
-
-  getRegistrationOptions(): IRegistrationOptions | undefined {
-    return this._registrationOptions;
-  }
-
-  setRegistrationOptions(value: IRegistrationOptions) {
-    this._registrationOptions = value;
-  }
-
-  constructor(registrationOptions: IRegistrationOptions = {}) {
-    this._registrationOptions = registrationOptions;
-  }
 
   private async recogniseTextFromCaptchaImage(imagePath: string): Promise<string | undefined> {
     if (!this._captchaRecogniser) {
@@ -61,18 +49,13 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       throw validationError;
     }
 
-    this.setRegistrationOptions(registrationOptions);
-
-    const browser = await puppeteer.launch({ headless: false });
+    const browser: Browser = await container.getAsync(SERVICE_IDENTIFIER.BROWSER);
     const page = await browser.newPage();
 
-    await page.goto(this.getRegistrationOptions()!.hostingUrl!);
+    await page.goto(registrationOptions!.hostingUrl!);
     await page.setViewport({ width: 1080, height: 1024 });
     await page.click(UKRAINE_HOSTING_SETTINGS.REGISTRATION_LINK_SELECTOR);
-    await page.type(
-      UKRAINE_HOSTING_SETTINGS.REGISTRATION_INPUT_EMAIL_FIELD_SELECTOR,
-      this.getRegistrationOptions()!.email!,
-    );
+    await page.type(UKRAINE_HOSTING_SETTINGS.REGISTRATION_INPUT_EMAIL_FIELD_SELECTOR, registrationOptions!.email!);
     const registerButton = await page.waitForSelector(UKRAINE_HOSTING_SETTINGS.REGISTRATION_BUTTON_SELECTOR);
 
     if (!registerButton) {
@@ -114,9 +97,9 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
     }
 
     return {
-      login: this.getRegistrationOptions()?.email ?? '',
-      email: this.getRegistrationOptions()?.email ?? '',
-      hostingUrl: this.getRegistrationOptions()?.hostingUrl ?? '',
+      login: registrationOptions!.email!,
+      email: registrationOptions.email!,
+      hostingUrl: registrationOptions.hostingUrl ?? '',
     };
   }
 }
