@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Constructor of church sites and sites of sports organizations",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "dev": "npx nodemon",
     "start": "npm run build && node build/main",

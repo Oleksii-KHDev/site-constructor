@@ -31,10 +31,10 @@ container.bind<ICaptchaRecogniser>(SERVICE_IDENTIFIER.CAPTCHA_RECOGNISER).to(Cap
 
 container
   .bind<interfaces.Factory<IHosting>>(SERVICE_IDENTIFIER.HOSTING_FACTORY)
-  .toFactory<IHosting, [string], [IHostingOptions]>((context: interfaces.Context) => {
-    return (type: string) => (options: IHostingOptions) => {
+  .toFactory<Promise<IHosting>, [string], [IHostingOptions]>((context: interfaces.Context) => {
+    return (type: string) => async (options: IHostingOptions) => {
       const hosting = context.container.getNamed<IHosting>(SERVICE_IDENTIFIER.HOSTING, type);
-      hosting.setOptions(options);
+      await hosting.setOptions(options);
       return hosting;
     };
   });
@@ -42,6 +42,7 @@ container
 container.bind<IHosting>(SERVICE_IDENTIFIER.HOSTING).to(UkraineHosting).whenTargetNamed(TAG.UKRAINE_HOSTING);
 
 // PUPPETEER BROWSER
-container.bind<Promise<Browser>>(SERVICE_IDENTIFIER.BROWSER).toConstantValue(puppeteer.launch({ headless: true }));
+const browser = puppeteer.launch({ headless: false });
+container.bind<Promise<Browser>>(SERVICE_IDENTIFIER.BROWSER).toConstantValue(browser);
 
 export default container;

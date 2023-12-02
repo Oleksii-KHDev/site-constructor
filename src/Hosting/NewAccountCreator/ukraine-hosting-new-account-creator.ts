@@ -2,10 +2,16 @@ import 'reflect-metadata';
 import { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
 import type { IRegistrationOptions } from 'site-constructor/hosting/new-account-creator';
 import type { IHostingAccount } from 'site-constructor/hosting';
-import type { ICaptchaRecogniser } from 'site-constructor';
+import type { ICaptchaRecogniser, CaptchaSolvingResult } from 'site-constructor';
 import { inject, injectable } from 'inversify';
-import puppeteer, { Browser } from 'puppeteer';
-import { convertImageSourceToUint8Array, delay, DtoValidator, saveUint8ArrayImageToDisk } from '../../utils';
+import { Browser } from 'puppeteer';
+import {
+  convertImageSourceToUint8Array,
+  delay,
+  DtoValidator,
+  saveUint8ArrayImageToDisk,
+  waitForVisibleElementOrThrowError,
+} from '../../utils';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
 import * as errors from '../../constants/errors';
@@ -21,13 +27,9 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
   private readonly _captchaRecogniser?: ICaptchaRecogniser;
 
   private async recogniseTextFromCaptchaImage(imagePath: string): Promise<string | undefined> {
-    if (!this._captchaRecogniser) {
-      throw new HttpDetailedError(errors.USING_CAPTCHA_RECOGNISER_SERVICE_ERROR);
-    }
-
-    await this._captchaRecogniser.initializeEnvironment();
+    await this._captchaRecogniser?.initializeEnvironment();
     const captchaText = (await this._captchaRecogniser!.recogniseCaptchaText(imagePath)).match(/\d/g)?.join('');
-    await this._captchaRecogniser.destroyEnvironment();
+    await this._captchaRecogniser?.destroyEnvironment();
     return captchaText;
   }
 
@@ -37,6 +39,10 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
      */
     if (!registrationOptions) {
       throw new HttpDetailedError(errors.INVALID_REGISTRATION_OPTIONS_ERROR);
+    }
+
+    if (!this._captchaRecogniser) {
+      throw new HttpDetailedError(errors.USING_CAPTCHA_RECOGNISER_SERVICE_ERROR);
     }
 
     const validationResult: IValidationResult = await new DtoValidator(HostingAccountOptionsDto).validate(
@@ -50,52 +56,55 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
     }
 
     const browser: Browser = await container.getAsync(SERVICE_IDENTIFIER.BROWSER);
-    const page = await browser.newPage();
 
-    await page.goto(registrationOptions!.hostingUrl!);
+    const pages = await browser.pages();
+    const page = pages.length === 1 ? pages[0] : await browser.newPage();
     await page.setViewport({ width: 1080, height: 1024 });
-    await page.click(UKRAINE_HOSTING_SETTINGS.REGISTRATION_LINK_SELECTOR);
-    await page.type(UKRAINE_HOSTING_SETTINGS.REGISTRATION_INPUT_EMAIL_FIELD_SELECTOR, registrationOptions!.email!);
-    const registerButton = await page.waitForSelector(UKRAINE_HOSTING_SETTINGS.REGISTRATION_BUTTON_SELECTOR);
+    await page.goto(registrationOptions!.hostingUrl!);
 
-    if (!registerButton) {
-      throw new HttpDetailedError(errors.CANT_FIND_REGISTRATION_BUTTON_ERROR);
+    await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_LINK_SELECTOR);
+    await page.click(UKRAINE_HOSTING_SETTINGS.REGISTRATION_LINK_SELECTOR);
+
+    await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_INPUT_EMAIL_FIELD_SELECTOR);
+    await page.type(UKRAINE_HOSTING_SETTINGS.REGISTRATION_INPUT_EMAIL_FIELD_SELECTOR, registrationOptions!.email!);
+    await delay(2000);
+
+    let captchaElement = await this._captchaRecogniser?.getCaptchaElementFromThePage(page);
+
+    if (captchaElement) {
+      const captchaSolvingResult = await this._captchaRecogniser?.solveCaptcha(captchaElement);
+      await delay(2000);
+      await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR);
+      await page.type(
+        UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR,
+        captchaSolvingResult.text! as string,
+      );
     }
 
+    const registerButton = await waitForVisibleElementOrThrowError(
+      page,
+      UKRAINE_HOSTING_SETTINGS.REGISTRATION_BUTTON_SELECTOR,
+    );
     await registerButton.evaluate((button) => button.click());
     await delay(2000);
-    const captchaImgEl = await page.$(UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_IMAGE_SELECTOR);
 
-    if (captchaImgEl) {
-      const captchaFileName: string = CAPTCHA_IMAGE_FILE_NAME;
+    captchaElement = await page.$(UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_IMAGE_SELECTOR);
 
-      const src = await (await captchaImgEl.getProperty('src')).jsonValue();
-
-      if (!(await saveUint8ArrayImageToDisk(captchaFileName, convertImageSourceToUint8Array(src)))) {
-        throw new HttpDetailedError(errors.CANT_SAVE_CAPTCHA_IMAGE_TO_DISK_ERROR);
-      }
-
-      const captchaText = await this.recogniseTextFromCaptchaImage(captchaFileName);
-
-      if (!captchaText) {
-        throw new HttpDetailedError(errors.CAPTCHA_TEXT_NOT_RECOGNIZED_ERROR);
-      }
-
-      const inputCaptchaField = await page.waitForSelector(
+    if (captchaElement) {
+      const captchaSolvingResult = await this._captchaRecogniser?.solveCaptcha(captchaElement);
+      await delay(2000);
+      await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR);
+      await page.type(
         UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR,
+        captchaSolvingResult.text! as string,
       );
-
-      if (inputCaptchaField) {
-        throw new HttpDetailedError(errors.CANT_FIND_CAPTCHA_TEXT_INPUT_FIELD_ERROR);
-      }
-      await page.type(UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR, captchaText);
+      await delay(2000);
       await registerButton.evaluate((button) => button.click());
-
-      /**
-       * @TODO Validate that sign in successfully and enter hosting dashboard
-       */
     }
 
+    /**
+     * @TODO Check if registration was successful
+     */
     return {
       login: registrationOptions!.email!,
       email: registrationOptions.email!,

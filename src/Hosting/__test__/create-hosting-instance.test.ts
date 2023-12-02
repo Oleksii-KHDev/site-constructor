@@ -9,7 +9,7 @@ describe('Test creation of new Hosting instance', () => {
   test('Should get Ukraine hosting instance from Inversify container', async () => {
     const email: email = 'yapew35657@anomgo.com';
     const hostingUrl = 'https://www.ukraine.com.ua/';
-    const ukraineHostingFactory: IHostingFactory = container.get(SERVICE_IDENTIFIER.UKRAINE_HOSTING_FACTORY);
+    const ukraineHostingFactory: IHostingFactory = await container.getAsync(SERVICE_IDENTIFIER.UKRAINE_HOSTING_FACTORY);
     const hosting = ukraineHostingFactory.createHosting({ email, hostingUrl });
     expect(hosting.twoFactorAutService).toBeInstanceOf(UkraineHostingTwoFactorAuthentication);
     expect(hosting.accountCreator).toBeInstanceOf(UkraineHostingNewAccountCreator);
