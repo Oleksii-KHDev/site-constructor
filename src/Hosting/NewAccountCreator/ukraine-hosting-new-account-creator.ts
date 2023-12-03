@@ -4,14 +4,8 @@ import type { IRegistrationOptions } from 'site-constructor/hosting/new-account-
 import type { IHostingAccount } from 'site-constructor/hosting';
 import type { ICaptchaRecogniser, CaptchaSolvingResult } from 'site-constructor';
 import { inject, injectable } from 'inversify';
-import { Browser } from 'puppeteer';
-import {
-  convertImageSourceToUint8Array,
-  delay,
-  DtoValidator,
-  saveUint8ArrayImageToDisk,
-  waitForVisibleElementOrThrowError,
-} from '../../utils';
+import { Browser, Page } from 'puppeteer';
+import { delay, DtoValidator, waitForVisibleElementOrThrowError } from '../../utils';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
 import * as errors from '../../constants/errors';
@@ -26,11 +20,21 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
   @inject(SERVICE_IDENTIFIER.CAPTCHA_RECOGNISER)
   private readonly _captchaRecogniser?: ICaptchaRecogniser;
 
-  private async recogniseTextFromCaptchaImage(imagePath: string): Promise<string | undefined> {
-    await this._captchaRecogniser?.initializeEnvironment();
-    const captchaText = (await this._captchaRecogniser!.recogniseCaptchaText(imagePath)).match(/\d/g)?.join('');
-    await this._captchaRecogniser?.destroyEnvironment();
-    return captchaText;
+  private async solveCaptchaIfPresent(page: Page): Promise<CaptchaSolvingResult> {
+    const captchaElement = await page.$(UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_IMAGE_SELECTOR);
+
+    if (captchaElement) {
+      const captchaSolvingResult = await this._captchaRecogniser?.solveCaptcha(captchaElement);
+      await delay(2000);
+      await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR);
+      await page.type(
+        UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR,
+        captchaSolvingResult!.text as string,
+      );
+      return captchaSolvingResult!;
+    }
+
+    return { status: 'skipped' };
   }
 
   public async register(registrationOptions?: IRegistrationOptions): Promise<IHostingAccount> {
@@ -69,38 +73,28 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
     await page.type(UKRAINE_HOSTING_SETTINGS.REGISTRATION_INPUT_EMAIL_FIELD_SELECTOR, registrationOptions!.email!);
     await delay(2000);
 
-    let captchaElement = await this._captchaRecogniser?.getCaptchaElementFromThePage(page);
-
-    if (captchaElement) {
-      const captchaSolvingResult = await this._captchaRecogniser?.solveCaptcha(captchaElement);
-      await delay(2000);
-      await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR);
-      await page.type(
-        UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR,
-        captchaSolvingResult.text! as string,
-      );
-    }
-
     const registerButton = await waitForVisibleElementOrThrowError(
       page,
       UKRAINE_HOSTING_SETTINGS.REGISTRATION_BUTTON_SELECTOR,
     );
+
+    let solvingResult = await this.solveCaptchaIfPresent(page);
+
     await registerButton.evaluate((button) => button.click());
     await delay(2000);
 
-    captchaElement = await page.$(UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_IMAGE_SELECTOR);
+    /**
+     * Checks that the input was correct
+     */
 
-    if (captchaElement) {
-      const captchaSolvingResult = await this._captchaRecogniser?.solveCaptcha(captchaElement);
-      await delay(2000);
-      await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR);
-      await page.type(
-        UKRAINE_HOSTING_SETTINGS.REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR,
-        captchaSolvingResult.text! as string,
-      );
-      await delay(2000);
+    solvingResult = await this.solveCaptchaIfPresent(page);
+    if (solvingResult.status === 'ok') {
       await registerButton.evaluate((button) => button.click());
     }
+
+    /**
+     * @TODO Handle redirect to the login page
+     */
 
     /**
      * @TODO Check if registration was successful

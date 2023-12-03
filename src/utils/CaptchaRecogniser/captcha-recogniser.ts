@@ -4,7 +4,7 @@ import type { ICaptchaRecogniser, CaptchaElement, CaptchaSolvingResult } from 's
 import { createWorker } from 'tesseract.js';
 import { injectable } from 'inversify';
 import { ElementHandle, NodeFor, Page } from 'puppeteer';
-import { CAPTCHA_IMAGE_FILE_NAME, REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR } from '../../constants';
+import { CAPTCHA_IMAGE_FILE_NAME, REGISTRATION_CAPTCHA_IMAGE_SELECTOR } from '../../constants';
 import { convertImageSourceToUint8Array, saveUint8ArrayImageToDisk } from '../image';
 import { HttpDetailedError } from '../errors/HttpDetailedError/http-detailed-error.class';
 import { CANT_GET_CAPTCHA_IMAGE_SRC_ERROR, CANT_SAVE_CAPTCHA_IMAGE_TO_DISK_ERROR } from '../../constants';
@@ -38,8 +38,8 @@ export class CaptchaRecogniser implements ICaptchaRecogniser {
 
   async getCaptchaElementFromThePage(
     page: Page,
-  ): Promise<ElementHandle<NodeFor<typeof REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR>> | null> {
-    return page.$(REGISTRATION_CAPTCHA_TEXT_INPUT_SELECTOR);
+  ): Promise<ElementHandle<NodeFor<typeof REGISTRATION_CAPTCHA_IMAGE_SELECTOR>> | null> {
+    return page.$(REGISTRATION_CAPTCHA_IMAGE_SELECTOR);
   }
 
   async solveCaptcha(element: CaptchaElement): Promise<CaptchaSolvingResult> {

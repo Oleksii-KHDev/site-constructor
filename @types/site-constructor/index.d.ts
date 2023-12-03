@@ -6,6 +6,7 @@ declare module 'site-constructor' {
   export type login = string;
   export type hostingUrl = string;
   export type status = 'ok' | 'error';
+  export type captchaSolvingStatus = status | 'skipped';
 
   export interface ICaptchaRecogniser {
     recogniseCaptchaText: (imagePath: string) => Promise<string>;
@@ -17,7 +18,7 @@ declare module 'site-constructor' {
   }
   export interface CaptchaSolvingResult {
     text?: string; // text from the captcha
-    status: status; // solving process status
+    status: captchaSolvingStatus; // solving process status
     message?: string; // error message
   }
 

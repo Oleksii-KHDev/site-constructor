@@ -4,16 +4,20 @@ import SERVICE_IDENTIFIER from '../../../constants/identifiers';
 import type { IHostingAccount, IHostingFactory, IHostingOptions } from 'site-constructor/hosting';
 import { Browser } from 'puppeteer';
 
-const EMAIL = 'segehot343@dpsols.com';
+const EMAIL = 'winije2134@cumzle.com';
 const HOSTING_URL = 'https://www.ukraine.com.ua/';
+let isDeleted = false;
 
 if (typeof require !== 'undefined' && require.main === module)
   (async function () {
     [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
       process.on(eventType, (signal) => {
         console.log(`Received ${signal}. Force closing the Puppeteer Browse`);
-        const browser: Browser = container.get(SERVICE_IDENTIFIER.BROWSER);
-        browser.close().then(() => console.log('Puppeteer Browser has closed'));
+        if (!isDeleted) {
+          isDeleted = true;
+          const browser: Browser = container.get(SERVICE_IDENTIFIER.BROWSER);
+          browser.close().then(() => console.log('Puppeteer Browser has closed'));
+        }
       });
     });
 
