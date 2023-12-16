@@ -47,7 +47,10 @@ describe('Test creating http-error from http-errors package with constants error
     };
 
     try {
-      const result = await UkraineHostingNewAccountCreator.prototype.register(testOption);
+      const result = await UkraineHostingNewAccountCreator.prototype.register.call(
+        { _captchaRecogniser: {} },
+        testOption,
+      );
     } catch (err) {
       expect(err).toBeDefined();
       expect(err).toBeInstanceOf(HttpError);
