@@ -38,9 +38,6 @@ describe('Test creating http-error from http-errors package with constants error
   test('Returned error should contain validation error messages', async () => {
     expect.assertions(11);
 
-    /**
-     * Invalid email
-     */
     const testOption = {
       email: 'test_test.com',
       hostingUrl: 'https://test.com',
