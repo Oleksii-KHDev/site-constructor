@@ -9,7 +9,6 @@ import { delay, DtoValidator, waitForVisibleElementOrThrowError } from '../../ut
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
 import * as errors from '../../constants/errors';
-import { CAPTCHA_IMAGE_FILE_NAME } from '../../constants';
 import { IValidationResult } from 'site-constructor/validation';
 import { HostingAccountOptionsDto } from './Dto/new-account-options.dto';
 import { HttpDetailedError } from '../../utils/errors/HttpDetailedError/http-detailed-error.class';
@@ -38,9 +37,6 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
   }
 
   public async register(registrationOptions?: IRegistrationOptions): Promise<IHostingAccount> {
-    /**
-     * @TODO Polish and verify registration process
-     */
     if (!registrationOptions) {
       throw new HttpDetailedError(errors.INVALID_REGISTRATION_OPTIONS_ERROR);
     }
@@ -59,11 +55,21 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       throw validationError;
     }
 
+    const accountData = {
+      login: registrationOptions!.email!,
+      email: registrationOptions.email!,
+      hostingUrl: registrationOptions.hostingUrl ?? '',
+    };
+
     const browser: Browser = await container.getAsync(SERVICE_IDENTIFIER.BROWSER);
 
     const pages = await browser.pages();
     const page = pages.length === 1 ? pages[0] : await browser.newPage();
+
     await page.setViewport({ width: 1080, height: 1024 });
+    page.setDefaultNavigationTimeout(10000);
+    page.setDefaultTimeout(10000);
+
     await page.goto(registrationOptions!.hostingUrl!);
 
     await waitForVisibleElementOrThrowError(page, UKRAINE_HOSTING_SETTINGS.REGISTRATION_LINK_SELECTOR);
@@ -78,31 +84,28 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       UKRAINE_HOSTING_SETTINGS.REGISTRATION_BUTTON_SELECTOR,
     );
 
-    let solvingResult = await this.solveCaptchaIfPresent(page);
-
+    await this.solveCaptchaIfPresent(page);
     await registerButton.evaluate((button) => button.click());
-    await delay(2000);
 
     /**
-     * Checks that the input was correct
+     * Successfully registration or redirect to the ADM AUTH page
      */
-
-    solvingResult = await this.solveCaptchaIfPresent(page);
-    if (solvingResult.status === 'ok') {
-      await registerButton.evaluate((button) => button.click());
-    }
+    const registrationResult = await Promise.any([
+      page.waitForSelector(UKRAINE_HOSTING_SETTINGS.USER_PROFILE_LINK_SELECTOR, {
+        hidden: false,
+      }),
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    ]).catch((e) => {
+      console.error(e);
+      throw new HttpDetailedError(errors.REGISTRATION_PROCESS_FAILED_ERROR);
+    });
 
     /**
-     * @TODO Handle redirect to the login page
+     * @TODO Handle redirect to the ADM AUTH page
+     * @TODO Realize login without password flow
+     * @TODO Realize user already exists flow
      */
 
-    /**
-     * @TODO Check if registration was successful
-     */
-    return {
-      login: registrationOptions!.email!,
-      email: registrationOptions.email!,
-      hostingUrl: registrationOptions.hostingUrl ?? '',
-    };
+    return accountData;
   }
 }

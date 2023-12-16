@@ -12,4 +12,4 @@ https://github.com/TypeStrong/ts-node/issues/1007
 
 https://github.com/TypeStrong/ts-node/issues/935
 
-## Last error code 1010
+## Last error code 1011

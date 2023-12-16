@@ -57,6 +57,10 @@ export class CaptchaRecogniser implements ICaptchaRecogniser {
     await this.initializeEnvironment();
     const captchaText = (await this.recogniseCaptchaText(captchaFileName)).match(/\d/g)?.join('');
 
+    /**
+     * @TODO Restart recognition process if length of the captcha text less than 6 digits
+     */
+
     if (!captchaText) {
       await this.destroyEnvironment();
       throw new HttpDetailedError(errors.CAPTCHA_TEXT_NOT_RECOGNIZED_ERROR);

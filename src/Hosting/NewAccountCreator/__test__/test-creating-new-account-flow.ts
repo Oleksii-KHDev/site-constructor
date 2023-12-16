@@ -4,7 +4,7 @@ import SERVICE_IDENTIFIER from '../../../constants/identifiers';
 import type { IHostingAccount, IHostingFactory, IHostingOptions } from 'site-constructor/hosting';
 import { Browser } from 'puppeteer';
 
-const EMAIL = 'winije2134@cumzle.com';
+const EMAIL = 'baceno9597@getmola.com';
 const HOSTING_URL = 'https://www.ukraine.com.ua/';
 let isDeleted = false;
 
