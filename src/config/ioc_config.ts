@@ -42,12 +42,13 @@ container
 container.bind<IHosting>(SERVICE_IDENTIFIER.HOSTING).to(UkraineHosting).whenTargetNamed(TAG.UKRAINE_HOSTING);
 
 // PUPPETEER BROWSER
-const browser = puppeteer.launch({
-  headless: true,
-  env: {
-    DISPLAY: ':10.0',
-  },
-});
-container.bind<Promise<Browser>>(SERVICE_IDENTIFIER.BROWSER).toConstantValue(browser);
+container.bind<Promise<Browser>>(SERVICE_IDENTIFIER.BROWSER).toConstantValue(
+  puppeteer.launch({
+    headless: true,
+    env: {
+      DISPLAY: ':10.0',
+    },
+  }),
+);
 
 export default container;
