@@ -4,7 +4,7 @@ import type { IRegistrationOptions } from 'site-constructor/hosting/new-account-
 import type { IHostingAccount } from 'site-constructor/hosting';
 import type { ICaptchaRecogniser, CaptchaSolvingResult } from 'site-constructor';
 import { inject, injectable } from 'inversify';
-import { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer';
 import { delay, DtoValidator, waitForVisibleElementOrThrowError } from '../../utils';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
@@ -61,8 +61,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       hostingUrl: registrationOptions.hostingUrl ?? '',
     };
 
-    const browser: Browser = await container.getAsync(SERVICE_IDENTIFIER.BROWSER);
-
+    const browser: Browser = await puppeteer.launch({ headless: true });
     const pages = await browser.pages();
     const page = pages.length === 1 ? pages[0] : await browser.newPage();
 
