@@ -1,5 +1,6 @@
 import type { email, login, hostingUrl } from 'site-constructor';
 import type { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
+import { Browser } from 'puppeteer';
 
 declare module 'site-constructor/hosting' {
   export interface IHosting {
@@ -29,6 +30,7 @@ declare module 'site-constructor/hosting' {
   export interface IHostingOptions {
     email?: email;
     hostingUrl?: hostingUrl;
+    browser?: Browser;
   }
 
   export interface IHostingAccount {

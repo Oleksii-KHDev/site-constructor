@@ -2,6 +2,7 @@ import type { IHostingFactory, IHostingAccount } from 'site-constructor/hosting'
 import type { email, hostingUrl } from 'site-constructor';
 import container from './config/ioc_config';
 import SERVICE_IDENTIFIER from './constants/identifiers';
+import TAG from './constants/tags';
 
 /**
  * Popup after successful registration
@@ -10,6 +11,9 @@ import SERVICE_IDENTIFIER from './constants/identifiers';
 
 const email: email = 'yapew35657@anomgo.com';
 const hostingUrl: hostingUrl = 'https://www.ukraine.com.ua/';
-const ukraineHostingFactory: IHostingFactory = container.get(SERVICE_IDENTIFIER.UKRAINE_HOSTING_FACTORY);
+const ukraineHostingFactory: IHostingFactory = container.getNamed<IHostingFactory>(
+  SERVICE_IDENTIFIER.HOSTING_FACTORY,
+  TAG.UKRAINE_HOSTING_FACTORY,
+);
 const hosting = ukraineHostingFactory.createHosting({ email, hostingUrl });
 const account: IHostingAccount = hosting.createNewAccount();

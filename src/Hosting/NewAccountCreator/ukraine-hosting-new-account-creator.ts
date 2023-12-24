@@ -36,7 +36,10 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
     return { status: 'skipped' };
   }
 
-  public async register(registrationOptions?: IRegistrationOptions): Promise<IHostingAccount> {
+  public async register(
+    registrationOptions?: IRegistrationOptions,
+    defaultBrowser?: Browser,
+  ): Promise<IHostingAccount> {
     if (!registrationOptions) {
       throw new HttpDetailedError(errors.INVALID_REGISTRATION_OPTIONS_ERROR);
     }
@@ -61,7 +64,7 @@ export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {
       hostingUrl: registrationOptions.hostingUrl ?? '',
     };
 
-    const browser: Browser = await puppeteer.launch({ headless: true });
+    const browser: Browser = defaultBrowser ? defaultBrowser : await puppeteer.launch({ headless: true });
     const pages = await browser.pages();
     const page = pages.length === 1 ? pages[0] : await browser.newPage();
 
