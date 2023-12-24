@@ -12,6 +12,7 @@ module.exports = {
     '^site-constructor/(.*)$': '<rootDir>/@types/site-constructor/$1',
   },
   moduleDirectories: ["node_modules", '@types', 'src'],
+  roots: ["<rootDir>/src/"],
 };
 
 require('dotenv').config({ path: './.env.test' });

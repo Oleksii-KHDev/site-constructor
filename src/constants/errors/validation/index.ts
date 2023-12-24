@@ -1,6 +1,6 @@
 import { HttpErrorDetailsArray } from 'site-constructor/errors';
 
-export const ERROR_HOSTING_CREATION_OPTIONS = 1007;
+export const ERROR_HOSTING_CREATION_OPTIONS = 1009;
 export const INVALID_HOSTING_PARAMETERS_ERROR: HttpErrorDetailsArray = [
   400,
   'invalid hosting parameters',

@@ -38,16 +38,16 @@ describe('Test creating http-error from http-errors package with constants error
   test('Returned error should contain validation error messages', async () => {
     expect.assertions(11);
 
-    /**
-     * Invalid email
-     */
     const testOption = {
       email: 'test_test.com',
       hostingUrl: 'https://test.com',
     };
 
     try {
-      const result = await UkraineHostingNewAccountCreator.prototype.register(testOption);
+      const result = await UkraineHostingNewAccountCreator.prototype.register.call(
+        { _captchaRecogniser: {} },
+        testOption,
+      );
     } catch (err) {
       expect(err).toBeDefined();
       expect(err).toBeInstanceOf(HttpError);

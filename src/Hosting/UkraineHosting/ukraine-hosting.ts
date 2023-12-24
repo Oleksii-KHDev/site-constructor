@@ -17,10 +17,6 @@ export class UkraineHosting implements IHosting {
   readonly _accountCreator?: IHostingAccountCreator;
   _options?: IHostingOptions | undefined;
 
-  constructor(options: IHostingOptions = {}) {
-    this._options = options;
-  }
-
   getOptions(): IHostingOptions | undefined {
     return this._options;
   }
