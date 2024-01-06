@@ -6,15 +6,14 @@ import type { IHostingOptions, IHostingFactory, IHosting } from 'site-constructo
 import { UkraineHosting } from '../Hosting';
 import type { IHostingAccountCreator } from 'site-constructor/hosting/new-account-creator';
 import type { ICaptchaRecogniser } from 'site-constructor';
-import { UkraineHostingFactory } from '../Hosting/HostingFactory/ukraine-hosting-factory';
 import { UkraineHostingNewAccountCreator } from '../Hosting/NewAccountCreator';
 import { CaptchaRecogniser } from '../utils';
 import UkraineHostingTwoFactorAuthentication from '../Hosting/TwoFactorAuthentication/UkraineHostingTwoFactorAuthentication/UkraineHostingTwoFactorAuthentication';
 import type { ITwoFactorAuthentication } from 'site-constructor/hosting/two-factor-authentication';
+import puppeteer, { Browser } from 'puppeteer';
+import { UkraineHostingFactory } from '../Hosting/HostingFactory/ukraine-hosting-factory';
 
 const container = new Container();
-
-container.bind<IHostingFactory>(SERVICE_IDENTIFIER.UKRAINE_HOSTING_FACTORY).to(UkraineHostingFactory);
 
 container
   .bind<IHostingAccountCreator>(SERVICE_IDENTIFIER.NEW_ACCOUNT_CREATOR)
@@ -33,10 +32,16 @@ container
   .toFactory<Promise<IHosting>, [string], [IHostingOptions]>((context: interfaces.Context) => {
     return (type: string) => async (options: IHostingOptions) => {
       const hosting = context.container.getNamed<IHosting>(SERVICE_IDENTIFIER.HOSTING, type);
+      options.browser = await puppeteer.launch({ headless: true });
       await hosting.setOptions(options);
       return hosting;
     };
-  });
+  })
+  .whenTargetIsDefault();
 
+container
+  .bind<IHostingFactory>(SERVICE_IDENTIFIER.HOSTING_FACTORY)
+  .to(UkraineHostingFactory)
+  .whenTargetNamed(TAG.UKRAINE_HOSTING_FACTORY);
 container.bind<IHosting>(SERVICE_IDENTIFIER.HOSTING).to(UkraineHosting).whenTargetNamed(TAG.UKRAINE_HOSTING);
 export default container;
