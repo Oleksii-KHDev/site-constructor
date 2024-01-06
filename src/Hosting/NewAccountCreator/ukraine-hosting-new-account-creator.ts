@@ -4,7 +4,8 @@ import type { IRegistrationOptions } from 'site-constructor/hosting/new-account-
 import type { IHostingAccount } from 'site-constructor/hosting';
 import type { ICaptchaRecogniser, CaptchaSolvingResult } from 'site-constructor';
 import { inject, injectable } from 'inversify';
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer from 'puppeteer';
+import type { Browser, Page } from 'puppeteer';
 import { delay, DtoValidator, waitForVisibleElementOrThrowError } from '../../utils';
 import SERVICE_IDENTIFIER from '../../constants/identifiers';
 import * as UKRAINE_HOSTING_SETTINGS from '../../constants/ukraine-hosting';
@@ -12,7 +13,6 @@ import * as errors from '../../constants/errors';
 import { IValidationResult } from 'site-constructor/validation';
 import { HostingAccountOptionsDto } from './Dto/new-account-options.dto';
 import { HttpDetailedError } from '../../utils/errors/HttpDetailedError/http-detailed-error.class';
-import container from '../../config/ioc_config';
 
 @injectable()
 export class UkraineHostingNewAccountCreator implements IHostingAccountCreator {

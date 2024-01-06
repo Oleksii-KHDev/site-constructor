@@ -27,9 +27,11 @@
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^5.60.0",
     "@typescript-eslint/parser": "^5.60.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.43.0",
     "husky": "^8.0.3",
     "jest-extended": "^4.0.0",
+    "jest-puppeteer": "^9.0.2",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.1",
@@ -49,7 +51,7 @@
     "dotenv": "^16.3.1",
     "http-errors": "^2.0.0",
     "inversify": "^6.0.1",
-    "puppeteer": "^21.1.0",
+    "puppeteer": "^21.6.1",
     "reflect-metadata": "^0.1.13",
     "tesseract.js": "^4.1.2"
   }
